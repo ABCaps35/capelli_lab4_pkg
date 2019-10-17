@@ -1,7 +1,18 @@
 <launch>
-	<arg name = "filename" default="robot.urdf"/>
-	<arg name = "file" default = "$(find capelli_lab4_pkg)/urdf/$(arg filename)"/>
-	<param name = "robot_description" textfile="$(arg file)"/>
+	<arg name="use_xacro" default="false" />
+	<arg name="use_gui" default="true" />
+
+	<arg if="$(arg use_xacro)" name="filename" default="robot.xacro" />
+	<arg unless="$(arg use_xacro)" name="filename" default="newrobot.urdf"/>
+
+	<arg name="file" default="$(find capelli_lab4_pkg)/urdf/$(arg filename)" />
+
+	<param if="$(arg use_xacro)" name="robot_description" command="$(find xacro)/xacro --inorder $(arg file)"/>
+	<param unless="$(arg use_xacro)" name="robot_description" textfile="$(arg file)" />
+
+	<param if="$(arg use_gui)" name="gui_command" command="rosparam set /use_gui $(arg use_gui)" />
+	<node if="$(arg use_gui)" pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" />
+
 	<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
-	<node pkg="rviz" name="rviz" args"-d $(find capelli_lab4_pkg)/config/config.rviz" required="true" />
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find capelli_lab4_pkg)/config/config.rviz" required="true" />
 </launch>
